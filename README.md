@@ -38,4 +38,4 @@ npm start
 
 ## 👨‍💻 Author
 
-**Gede Gunawan Sutrayasa**
+**Gunawan Sutrayasa**
