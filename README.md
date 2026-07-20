@@ -107,6 +107,14 @@ npm start
 
 ---
 
+## 📄 Copyright
+
+Copyright © 2026 Gunawan Sutrayasa. All rights reserved.
+
+This project was developed for educational and portfolio purposes. Unauthorized commercial use, reproduction, or distribution without permission is prohibited.
+
+---
+
 ## 👨‍💻 Author
 
 **Gunawan Sutrayasa**
