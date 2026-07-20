@@ -11,43 +11,55 @@ CareerTracker is a web-based portfolio management system that helps users organi
 
 ## 📸 Application Preview
 
+### 🔐 Authentication
+
+| Register | Login |
+|----------|-------|
+| ![](screenshot/auth/register.png) | ![](screenshot/auth/login.png) |
+
+---
+
 ### 👤 User Interface
 
-| Login | Dashboard |
-|--------|-----------|
-| ![](screenshots/login.png) | ![](screenshots/dashboard.png) |
+| Dashboard | Projects |
+|-----------|----------|
+| ![](screenshot/user-view/dashboard.png) | ![](screenshot/user-view/project.png) |
 
-| Projects | Certificates |
-|----------|--------------|
-| ![](screenshots/project.png) | ![](screenshots/certificate.png) |
+| Organizations | Experiences |
+|---------------|-------------|
+| ![](screenshot/user-view/organization.png) | ![](screenshot/user-view/experience.png) |
 
-| Skills | Experience |
-|--------|------------|
-| ![](screenshots/skill.png) | ![](screenshots/experience.png) |
+| Achievements | Certificates |
+|--------------|--------------|
+| ![](screenshot/user-view/achievement.png) | ![](screenshot/user-view/certificate.png) |
 
-| Organizations | Achievements |
-|---------------|--------------|
-| ![](screenshots/organization.png) | ![](screenshots/achievement.png) |
+| Skills |
+|--------|
+| ![](screenshot/user-view/skill.png) |
 
 ---
 
 ### 🛠️ Admin Interface
 
-| Dashboard | User Management |
-|-----------|-----------------|
-| ![](screenshots/admin-dashboard.png) | ![](screenshots/admin-users.png) |
+| Register | Login |
+|----------|-------|
+| ![](screenshot/admin-view/register.png) | ![](screenshot/admin-view/login.png) |
 
-| Project Management | Certificate Management |
-|--------------------|------------------------|
-| ![](screenshots/admin-project.png) | ![](screenshots/admin-certificate.png) |
+| Dashboard | Database Information |
+|-----------|----------------------|
+| ![](screenshot/admin-view/dashboard.png) | ![](screenshot/admin-view/database-information.png) |
 
-| Skills Management | Experience Management |
-|-------------------|-----------------------|
-| ![](screenshots/admin-skill.png) | ![](screenshots/admin-experience.png) |
+| Table Information | Upgrade Structure |
+|-------------------|-------------------|
+| ![](screenshot/admin-view/table-information.png) | ![](screenshot/admin-view/upgrade-structure.png) |
 
-| Organization Management | Achievement Management |
-|-------------------------|------------------------|
-| ![](screenshots/admin-organization.png) | ![](screenshots/admin-achievement.png) |
+| Index Management | Reset Database |
+|------------------|----------------|
+| ![](screenshot/admin-view/index-management.png) | ![](screenshot/admin-view/reset-database.png) |
+
+| SQL Activity Logs |
+|-------------------|
+| ![](screenshot/admin-view/sql-activity-logs.png) |
 
 ---
 
