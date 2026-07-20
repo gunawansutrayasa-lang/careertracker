@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Certificate — CareerTracker</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --ct-bg: #fafafa;
+        --ct-surface: #ffffff;
+        --ct-border: #eeeeee;
+        --ct-text-main: #0a0a0a;
+        --ct-text-muted: #666666;
+        --ct-accent: #000000;
+        --ct-radius: 8px;
+        --ct-radius-sm: 6px;
+      }
+      body {
+        background-color: var(--ct-bg);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ct-text-main);
+      }
+      .ct-main-center {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 0 24px;
+      }
+      .card-saas {
+        background: var(--ct-surface);
+        border: 1px solid var(--ct-border);
+        border-radius: var(--ct-radius);
+        padding: 32px;
+      }
+      .form-control-saas {
+        background-color: var(--ct-bg);
+        border: 1px solid var(--ct-border);
+        border-radius: var(--ct-radius-sm);
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        margin-bottom: 20px;
+      }
+      .btn-premium {
+        background-color: var(--ct-accent);
+        color: #ffffff;
+        border-radius: var(--ct-radius-sm);
+        font-size: 0.875rem;
+        padding: 10px 20px;
+        border: 1px solid var(--ct-accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .btn-cancel {
+        border: 1px solid var(--ct-border);
+        background: none;
+        color: var(--ct-text-muted);
+        padding: 10px 20px;
+        border-radius: var(--ct-radius-sm);
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ct-main-center">
+      <div class="mb-4">
+        <a href="/certificates" class="btn-cancel px-3 py-1.5 small"
+          ><i
+            data-lucide="arrow-left"
+            style="width: 14px; height: 14px; vertical-align: middle"
+          ></i>
+          Back</a
+        >
+        <h3 class="fw-bold m-0 mt-4">Mount Certificate Node</h3>
+      </div>
+      <div class="card-saas">
+        <form
+          method="POST"
+          action="/certificates"
+          enctype="multipart/form-data"
+        >
+          <label class="small fw-semibold text-muted mb-2"
+            >Certificate Name / Course Title</label
+          >
+          <input
+            type="text"
+            name="name"
+            class="form-control form-control-saas"
+            required
+            placeholder="e.g., Ultimate Node.js Developer Core Suite"
+          />
+
+          <label class="small fw-semibold text-muted mb-2"
+            >Issuing Organization</label
+          >
+          <input
+            type="text"
+            name="issuing_organization"
+            class="form-control form-control-saas"
+            required
+            placeholder="e.g., Google Cloud, Coursera, AWS"
+          />
+
+          <div class="row">
+            <div class="col-md-6">
+              <label class="small fw-semibold text-muted mb-2"
+                >Issue Date</label
+              >
+              <input
+                type="date"
+                name="issue_date"
+                class="form-control form-control-saas"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="small fw-semibold text-muted mb-2"
+                >Expiration Date (Optional)</label
+              >
+              <input
+                type="date"
+                name="expiration_date"
+                class="form-control form-control-saas"
+              />
+            </div>
+          </div>
+
+          <label class="small fw-semibold text-muted mb-2"
+            >Credential ID (Optional)</label
+          >
+          <input
+            type="text"
+            name="credential_id"
+            class="form-control form-control-saas"
+            placeholder="e.g., CR-894723-XYZ"
+          />
+
+          <label class="small fw-semibold text-muted mb-2"
+            >Upload Certificate Image (.png, .jpg, .jpeg)</label
+          >
+          <input
+            type="file"
+            name="certificate_img"
+            class="form-control form-control-saas"
+            accept="image/*"
+          />
+
+          <div class="d-flex justify-content-end gap-3">
+            <a href="/certificates" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-premium">
+              Commit & Stream File
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

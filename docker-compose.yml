@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  # --- DATABASE ENGINE (MySQL) ---
+  db:
+    image: mysql:8.0
+    container_name: careertracker_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: careertracker
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # --- NODE.JS APPLICATION ENGINE ---
+  app:
+    build: .
+    container_name: careertracker_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=userpassword
+      - DB_NAME=careertracker
+    depends_on:
+      - db
+
+# --- DEFINISI STORAGE PERMANEN (DOCKER VOLUME) ---
+volumes:
+  mysql_data:
+    name: careertracker_storage # <-- Mengunci nama volume absolut di dalam sistem internal Docker

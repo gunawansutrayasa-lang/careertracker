@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — CareerTracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* --- DESIGN SYSTEM CORE TOKENS --- */
+        :root {
+            --ct-bg: #fafafa;
+            --ct-surface: #ffffff;
+            --ct-border: #eeeeee;
+            --ct-border-hover: #e0e0e0;
+            --ct-text-main: #0a0a0a;
+            --ct-text-muted: #666666;
+            --ct-accent: #000000;
+            --ct-radius: 8px;
+            --ct-radius-sm: 6px;
+        }
+
+        body { 
+            background-color: var(--ct-bg); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            color: var(--ct-text-main);
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+        }
+
+/* --- LAYOUT STRUCTURE & COLLAPSIBLE SIDEBAR --- */
+        .ct-sidebar { 
+            background-color: var(--ct-surface);
+            border-right: 1px solid var(--ct-border); 
+            height: 100vh; 
+            position: fixed; 
+            width: 240px; /* Lebar default saat terbuka */
+            top: 0; 
+            left: 0; 
+            padding: 24px 16px; 
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            z-index: 1000;
+        }
+
+        .ct-main { 
+            margin-left: 240px; /* Jarak default dari sidebar */
+            padding: 40px 56px; 
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Pergeseran halaman halus */
+        }
+
+        /* --- STATE KETIKA SIDEBAR MENGECIL (COLLAPSED) --- */
+        .ct-sidebar.collapsed {
+            width: 75px; /* Lebar mini hanya muat ikon */
+            padding: 24px 12px;
+        }
+
+        .ct-main.sidebar-collapsed {
+            margin-left: 75px; /* Konten otomatis maju ke kiri mengikuti sidebar */
+        }
+
+        /* Sembunyikan semua teks berlabel .sidebar-text secara total */
+        .ct-sidebar.collapsed .sidebar-text {
+            display: none !important;
+        }
+
+        /* Penyesuaian header logo & tombol hamburger saat mengecil */
+        .ct-sidebar.collapsed .dashboard-header-box {
+            justify-content: center !important;
+        }
+        .ct-sidebar.collapsed .ct-brand {
+            display: none !important;
+        }
+
+        /* Penyesuaian item menu navigasi agar presisi di tengah */
+        .ct-sidebar.collapsed .ct-nav-item {
+            justify-content: center;
+            padding: 10px 0;
+            gap: 0;
+        }
+        .ct-sidebar.collapsed .ct-nav-item i {
+            margin: 0 !important;
+        }
+
+        /* Penyesuaian tombol profil bulat di bawah */
+        .ct-sidebar.collapsed .dropup button {
+            justify-content: center !important;
+            padding: 8px 0 !important;
+        }
+        
+        /* Menjaga agar pop-up menu upload foto tetap lebar & proporsional saat diklik */
+        .ct-sidebar.collapsed .compact-menu {
+            min-width: 210px !important;
+        }
+        
+        /* Styling untuk membuat menu profil lebih compact */
+        .compact-menu {
+            padding: 0.5rem 0 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .compact-menu .dropdown-item {
+            padding: 0.4rem 1rem !important; /* Memperkecil padding item */
+        }
+
+        .compact-menu .dropdown-divider {
+            margin: 0.25rem 0 !important; /* Memperkecil jarak garis pemisah */
+        }
+        .ct-main { 
+            margin-left: 240px; 
+            padding: 40px 56px; 
+        }
+        .ct-brand { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            letter-spacing: -0.03em; 
+        }
+
+        /* --- INTERACTIVE NAVIGATION --- */
+        .ct-nav-item { 
+            color: var(--ct-text-muted); 
+            border-radius: var(--ct-radius-sm); 
+            padding: 10px 12px; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .ct-nav-item i { width: 16px; height: 16px; stroke-width: 2; }
+        .ct-nav-item:hover { 
+            background-color: #f5f5f5; 
+            color: var(--ct-text-main); 
+        }
+        .ct-nav-item.active { 
+            background-color: #000000; 
+            color: #ffffff; 
+        }
+
+        /* --- PREMIUM DROPDOWN ENGINE --- */
+        .dropdown-menu-saas {
+            background-color: var(--ct-surface);
+            border: 1px solid var(--ct-border);
+            border-radius: var(--ct-radius-sm);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 6px;
+            min-width: 180px;
+            margin-top: 6px !important;
+        }
+
+        .dropdown-item-saas {
+            color: var(--ct-text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 8px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.1s ease;
+        }
+
+        .dropdown-item-saas i {
+            width: 14px;
+            height: 14px;
+            color: #999;
+        }
+
+        .dropdown-item-saas:hover {
+            background-color: #f5f5f5;
+            color: var(--ct-text-main);
+        }
+
+        .dropdown-item-saas:hover i {
+            color: var(--ct-text-main);
+        }
+
+        .dropdown-divider-saas {
+            height: 1px;
+            background-color: var(--ct-border);
+            margin: 4px 0;
+        }
+
+        /* --- SaaS COMPONENTS --- */
+        .card-saas { 
+            background: var(--ct-surface); 
+            border: 1px solid var(--ct-border); 
+            border-radius: var(--ct-radius); 
+            padding: 24px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-saas:hover { 
+            border-color: var(--ct-border-hover);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+        }
+
+        /* METRIC STYLING */
+        .metric-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ct-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .metric-title i { width: 14px; height: 14px; color: #a3a3a3; }
+        .metric-value { 
+            font-size: 2.25rem; 
+            font-weight: 700; 
+            letter-spacing: -0.04em; 
+            color: var(--ct-text-main);
+            margin-top: 10px;
+            line-height: 1;
+        }
+
+        /* --- PREMIUM DATAGRID --- */
+        .ct-table {
+            width: 100%;
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+        .ct-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ct-text-muted);
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--ct-border);
+            background: #fafafa;
+        }
+        .ct-table td {
+            padding: 16px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--ct-border);
+        }
+        .ct-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* --- PREMIUM CONTEXT BADGES --- */
+        .badge-premium {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+        }
+        .badge-premium.completed {
+            background-color: #f1fcf5;
+            color: #0e703c;
+            border-color: #d3f4e0;
+        }
+        .badge-premium.ongoing {
+            background-color: #fffaf0;
+            color: #b25e00;
+            border-color: #ffe6bd;
+        }
+        .badge-premium.category {
+            background-color: #f5f5f5;
+            color: var(--ct-text-main);
+            border-color: var(--ct-border);
+        }
+
+        /* --- INTERACTION TARGETS --- */
+        .btn-premium {
+            background-color: var(--ct-accent);
+            color: #ffffff;
+            border-radius: var(--ct-radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid var(--ct-accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        .btn-premium:hover {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .btn-premium i { width: 16px; height: 16px; }
+
+        h2, h5 {
+            letter-spacing: -0.03em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ct-sidebar" id="sidebar">
+        <div class="d-flex align-items-center justify-content-between px-2 mb-5 dashboard-header-box">
+            <div class="ct-brand">
+                <i data-lucide="box"></i> 
+                <span class="sidebar-text">CareerTracker</span>
+            </div>
+            <button class="btn p-1 border-0" id="sidebarToggle" style="color: var(--ct-text-main); display: flex; align-items: center;">
+                <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+
+        <div class="nav flex-column">
+            <a href="/" class="ct-nav-item"><i data-lucide="grid"></i> <span class="sidebar-text">Console Overview</span></a>
+            <a href="/projects" class="ct-nav-item"><i data-lucide="folder-kanban"></i> <span class="sidebar-text">Projects Engine</span></a>
+            <a href="/organizations" class="ct-nav-item"><i data-lucide="globe"></i> <span class="sidebar-text">Organizations</span></a>
+            <a href="/experiences" class="ct-nav-item"><i data-lucide="activity"></i> <span class="sidebar-text">Experiences</span></a>
+            <a href="/achievements" class="ct-nav-item"><i data-lucide="shield-check"></i> <span class="sidebar-text">Achievements</span></a>
+            <a href="/certificates" class="ct-nav-item"><i data-lucide="layers"></i> <span class="sidebar-text">Certificates</span></a>
+            <a href="/skills" class="ct-nav-item"><i data-lucide="cpu"></i> <span class="sidebar-text">Skills Registry</span></a>
+        </div>
+
+        <div class="mt-auto px-0">
+            <div class="dropup w-100">
+                <button class="btn btn-light w-100 d-flex align-items-center border-0 p-2 text-start" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="<%= user.avatar ? '/uploads/profiles/' + user.avatar : 'https://ui-avatars.com/api/?name=' + user.username %>" 
+                        class="rounded-circle" width="32" height="32" style="object-fit: cover; min-width: 32px; min-height: 32px;">
+                    <div class="sidebar-text ms-2" style="font-size: 0.85rem; overflow: hidden;">
+                        <div class="fw-bold"><%= user.username %></div>
+                        <div class="text-muted" style="font-size: 0.7rem;">Account Settings</div>
+                    </div>
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end w-100 mb-2 compact-menu shadow-sm">
+                    <li>
+                        <form action="/profile/upload" method="POST" enctype="multipart/form-data" class="px-3 py-1">
+                            <small class="text-muted d-block mb-1">Update Avatar</small>
+                            <input type="file" name="avatar" class="form-control form-control-sm mb-2" accept="image/*" required>
+                            <button type="submit" class="btn btn-dark btn-sm w-100">Upload</button>
+                        </form>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="/logout">
+                            <i data-lucide="log-out" class="me-2" style="width:14px"></i> Sign Out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="ct-main" id="mainContent">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold m-0 mb-1">Metrics Terminal</h2>
+                <p class="text-muted m-0" style="font-size: 0.95rem;">Aggregated real-time metrics across career data pipelines.</p>
+            </div>
+            <div class="dropdown">
+    <button class="btn-premium" data-bs-toggle="dropdown" data-bs-offset="0,6" aria-expanded="false">
+        <i data-lucide="plus"></i> New Entry
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-saas">
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/projects/new">
+                <i data-lucide="folder-plus"></i> New Project
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/organizations/new">
+                <i data-lucide="building"></i> New Organization
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/experiences/new">
+                <i data-lucide="briefcase"></i> New Experience
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/achievements/new">
+                <i data-lucide="shield-check"></i> New Achievement
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/certificates/new">
+                <i data-lucide="layers"></i> New Certificate
+            </a>
+        </li>
+        <div class="dropdown-divider-saas"></div>
+        <li>
+            <a class="dropdown-item dropdown-item-saas" href="/skills/new">
+                <i data-lucide="plus-circle"></i> Quick Skill Entry
+            </a>
+        </li>
+    </ul>
+</div>
+        </div>
+
+        <div class="row g-3 mb-5">
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Projects <i data-lucide="folder-kanban"></i></div>
+                    <div class="metric-value"><%= stats.projects %></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Orgs <i data-lucide="globe"></i></div>
+                    <div class="metric-value"><%= stats.organizations %></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Experiences <i data-lucide="activity"></i></div>
+                    <div class="metric-value"><%= stats.experiences %></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Awards <i data-lucide="shield-check"></i></div>
+                    <div class="metric-value"><%= stats.achievements %></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Certs <i data-lucide="layers"></i></div>
+                    <div class="metric-value"><%= stats.certificates %></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <div class="card-saas">
+                    <div class="metric-title">Skills <i data-lucide="cpu"></i></div>
+                    <div class="metric-value"><%= stats.skills %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-7">
+                <div class="card-saas p-0 overflow-hidden h-100">
+                    <div class="p-4 border-bottom">
+                        <h5 class="fw-bold m-0">Recent Deployments</h5>
+                        <p class="text-muted small m-0 mt-1">Latest project configurations synced with database.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table ct-table">
+                            <thead>
+                                <tr>
+                                    <th>Deployment Spec</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% latestProjects.forEach(project => { %>
+                                    <tr>
+                                        <td class="fw-semibold text-dark"><%= project.project_name %></td>
+                                        <td><span class="badge-premium category"><%= project.category %></span></td>
+                                        <td>
+                                            <span class="badge-premium <%= project.status === 'Completed' ? 'completed' : 'ongoing' %>">
+                                                <%= project.status %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card-saas h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="fw-bold m-0 mb-1">Architecture Distribution</h5>
+                        <p class="text-muted small m-0 mb-4">Metric clusters calculated via database taxonomy mapping.</p>
+                        
+                        <div style="position: relative; height: 260px; width: 100%;">
+                            <canvas id="architectureChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="text-start text-muted small pt-3 border-top mt-4" style="font-size: 0.75rem; letter-spacing: 0.02em;">
+                        🔒 CORE INTEGRITY: REAL-TIME SECURE DATASTREAM
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        lucide.createIcons();
+
+        // 1. Mengambil data array terstruktur dari Node.js backend
+    const rawData = JSON.parse('<%- JSON.stringify(projectStats) %>');
+    
+    // 2. Berhubung rawData adalah array angka mentah (contoh: [2, 1, 0, 0, 0, 0]), 
+    // kita tentukan labelnya secara manual sesuai urutan stat backend Anda:
+    const labels = ['Projects', 'Organizations', 'Experiences', 'Awards', 'Certificates', 'Skills'];
+    const dataValues = rawData; // langsung pasang array angka mentah
+
+    // 3. Inisialisasi Grafik Lingkaran (Doughnut Chart)
+    const ctx = document.getElementById('architectureChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: [
+                    '#0a0a0a', '#4a4a4a', '#8a8a8a', '#b5b5b5', '#d4d4d4', '#e5e5e5'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 10,
+                        padding: 15,
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        color: '#666666'
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebar = document.getElementById("sidebar");
+            const mainContent = document.getElementById("mainContent");
+            const toggleBtn = document.getElementById("sidebarToggle");
+
+            // 1. Ambil status mengecil/membesar terakhir dari memori browser (localStorage)
+            if (localStorage.getItem("sidebarStatus") === "collapsed") {
+                if (sidebar) sidebar.classList.add("collapsed");
+                if (mainContent) mainContent.classList.add("sidebar-collapsed");
+            }
+
+            // 2. Logika eksekusi klik tombol hamburger
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function() {
+                    sidebar.classList.toggle("collapsed");
+                    mainContent.classList.toggle("sidebar-collapsed");
+                    
+                    if (sidebar.classList.contains("collapsed")) {
+                        localStorage.setItem("sidebarStatus", "collapsed");
+                    } else {
+                        localStorage.setItem("sidebarStatus", "expanded");
+                    }
+                });
+            }
+
+            // 3. FITUR BARU: OTOMATIS HIGHLIGHT MENU SESUAI URL AKTIF
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.ct-nav-item');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                
+                // Kondisi A: Jika URL pas cocok (Contoh: / atau /projects)
+                // Kondisi B: Untuk sub-menu (Contoh jika buka /projects/new, menu /projects tetap menyala)
+                if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

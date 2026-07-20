@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Maintenance Console — CareerTracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --ct-bg: #fafafa;
+            --ct-surface: #ffffff;
+            --ct-border: #eeeeee;
+            --ct-text-main: #0a0a0a;
+            --ct-text-muted: #666666;
+            --ct-accent: #000000;
+            --ct-radius: 8px;
+            --ct-radius-sm: 6px;
+        }
+        body { 
+            background-color: var(--ct-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            color: var(--ct-text-main);
+        }
+        .ct-sidebar { 
+            background-color: var(--ct-surface);
+            border-right: 1px solid var(--ct-border); 
+            height: 100vh; 
+            position: fixed; 
+            width: 260px; 
+            top: 0; 
+            left: 0; 
+            padding: 24px 16px; 
+            display: flex;
+            flex-direction: column;
+        }
+        .ct-main { margin-left: 260px; padding: 40px 56px; }
+        .ct-brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .ct-nav-item { 
+            color: var(--ct-text-muted);
+            border-radius: var(--ct-radius-sm); 
+            padding: 10px 12px; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+        }
+        .ct-nav-item:hover, .ct-nav-item.active { background-color: #f5f5f5; color: var(--ct-text-main); }
+        .card-saas { background: var(--ct-surface); border: 1px solid var(--ct-border); border-radius: var(--ct-radius); padding: 24px; margin-bottom: 24px; }
+        .metric-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ct-text-muted); display: flex; justify-content: space-between; }
+        .metric-value { font-size: 2rem; font-weight: 700; color: var(--ct-text-main); margin-top: 8px; }
+        .ct-table { width: 100%; margin-bottom: 0; }
+        .ct-table th { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ct-text-muted); padding: 12px 16px; border-bottom: 1px solid var(--ct-border); background: #fafafa; }
+        .ct-table td { padding: 14px 16px; font-size: 0.875rem; border-bottom: 1px solid var(--ct-border); }
+        .btn-premium { background-color: var(--ct-accent); color: #fff; border-radius: var(--ct-radius-sm); font-size: 0.875rem; font-weight: 500; padding: 8px 16px; border: 1px solid var(--ct-accent); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-premium:hover { background-color: #1a1a1a; color: #fff; }
+        /* CSS BARU UNTUK SEGMEN PENGHAPUSAN DESTRUKTIF (DANGER THEME) */
+        .btn-danger-saas { 
+            background-color: #dc3545; 
+            color: #fff; 
+            border-radius: var(--ct-radius-sm); 
+            font-size: 0.875rem; 
+            font-weight: 500; 
+            padding: 8px 16px; 
+            border: 1px solid #dc3545; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-danger-saas:hover { background-color: #bd2130; border-color: #b21f2d; color: #fff; }
+        .card-danger-saas { border: 1px solid #f5c2c7 !important; background-color: #ffffff; }
+        .badge-danger-saas { background-color: #f8d7da; color: #842029; font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    </style>
+</head>
+<body>
+
+    <div class="ct-sidebar">
+        <div class="px-2 mb-4">
+            <div class="ct-brand">
+                <i data-lucide="wrench"></i> 
+                <span>DB Maintenance</span>
+            </div>
+            <small class="text-muted text-uppercase d-block mt-1" style="font-size:0.65rem; letter-spacing:0.05em;">Console Mode</small>
+        </div>
+        
+        <div class="nav flex-column" id="maintenanceTabs" role="tablist">
+            <button class="ct-nav-item active" id="tab-dash" data-bs-toggle="tab" data-bs-target="#panel-dash" type="button"><i data-lucide="layout-dashboard"></i> Maintenance Dashboard</button>
+            <button class="ct-nav-item" id="tab-dbinfo" data-bs-toggle="tab" data-bs-target="#panel-dbinfo" type="button"><i data-lucide="database"></i> Database Information</button>
+            <button class="ct-nav-item" id="tab-tblinfo" data-bs-toggle="tab" data-bs-target="#panel-tblinfo" type="button"><i data-lucide="table-2"></i> Table Information</button>
+            <button class="ct-nav-item" id="tab-upgrade" data-bs-toggle="tab" data-bs-target="#panel-upgrade" type="button"><i data-lucide="git-branch"></i> Upgrade Structure</button>
+            <button class="ct-nav-item" id="tab-index" data-bs-toggle="tab" data-bs-target="#panel-index" type="button"><i data-lucide="zap"></i> Index Management</button>
+            <button class="ct-nav-item" id="tab-reset" data-bs-toggle="tab" data-bs-target="#panel-reset" type="button"><i data-lucide="refresh-cw"></i> Reset Database</button>
+            <button class="ct-nav-item" id="tab-logs" data-bs-toggle="tab" data-bs-target="#panel-logs" type="button"><i data-lucide="terminal"></i> SQL Activity Log</button>
+        </div>
+
+        <div class="dropup mt-auto pt-3 border-top">
+            <button class="btn btn-light w-100 d-flex align-items-center justify-content-between p-2 border-0" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false">
+                <div class="text-start">
+                    <div class="fw-bold small text-dark">@<%= user.username %></div>
+                    <span class="badge bg-dark text-white rounded-1" style="font-size:0.65rem;">ADMIN ENGINE</span>
+                </div>
+                <i data-lucide="chevron-up" style="width:16px;"></i>
+            </button>
+            
+            <ul class="dropdown-menu w-100 shadow border-0 mb-2">
+                <li>
+                    <h6 class="dropdown-header text-uppercase small" style="font-size: 0.7rem;">Navigation</h6>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center" href="http://localhost:3000/">
+                        <i data-lucide="layout-dashboard" class="me-2" style="width:16px;"></i> Login App
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center text-danger" href="/logout">
+                        <i data-lucide="log-out" class="me-2" style="width:16px;"></i> Sign Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="ct-main">
+        
+        <% if (success) { %>
+            <div class="alert alert-success border-0 shadow-sm mb-4 d-flex align-items-center gap-2" role="alert">
+                <i data-lucide="check-circle" class="text-success"></i> <div><%= success %></div>
+            </div>
+        <% } %>
+        <% if (error) { %>
+            <div class="alert alert-danger border-0 shadow-sm mb-4 d-flex align-items-center gap-2" role="alert">
+                <i data-lucide="alert-triangle" class="text-danger"></i> <div><%= error %></div>
+            </div>
+        <% } %>
+
+        <div class="tab-content">
+            
+            <div class="tab-pane fade show active" id="panel-dash" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Maintenance Dashboard</h2>
+                    <p class="text-muted m-0">Infrastructural status of the CareerTracker relational database engine.</p>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card-saas">
+                            <div class="metric-title">Connection Status <i data-lucide="activity" class="text-success"></i></div>
+                            <div class="metric-value text-success" style="font-size: 1.5rem; margin-top:15px;">ONLINE (ACTIVE)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-saas">
+                            <div class="metric-title">Database Name <i data-lucide="database"></i></div>
+                            <div class="metric-value"><%= dbName %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-saas">
+                            <div class="metric-title">MySQL Version <i data-lucide="info"></i></div>
+                            <div class="metric-value" style="font-size:1.6rem;"><%= mysqlVersion.split('-')[0] %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-saas">
+                            <div class="metric-title">Total Tables <i data-lucide="table"></i></div>
+                            <div class="metric-value" id="dashTotalTables"><%= totalTables %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-saas">
+                            <div class="metric-title">Total Career Records <i data-lucide="layers"></i></div>
+                            <div class="metric-value"  id="dashTotalRecords" ><%= totalRecords %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-dbinfo" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Database Information</h2>
+                    <p class="text-muted m-0">Detailed runtime configuration of the storage engine schema parameters.</p>
+                </div>
+                <div class="card-saas p-0 overflow-hidden">
+                    <table class="table ct-table m-0">
+                        <thead><tr><th>Parameter</th><th>Value Spec / Configuration</th></tr></thead>
+                        <tbody>
+                            <tr><td>Database Name</td><td class="fw-bold text-dark"><%= dbName %></td></tr>
+                            <tr><td>MySQL Server Version</td><td><%= mysqlVersion %></td></tr>
+                            <tr><td>Default Storage Engine</td><td><span class="badge bg-secondary"><%= storageEngine %></span></td></tr>
+                            <tr><td>Character Set Encoding</td><td><code><%= characterSet %></code></td></tr>
+                            <tr><td>Total Registered Tables</td><td><%= totalTables %> Tables</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-tblinfo" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Table Information</h2>
+                    <p class="text-muted m-0">Select a target relation table to reverse-engineer schema properties and indexes.</p>
+                </div>
+                <div class="card-saas">
+                    <label class="form-label fw-bold">Select Target Table</label>
+                    <select class="form-select mb-4 shadow-sm" id="tableSelector" onchange="fetchTableMetadata(this.value)">
+                        <option value="">-- Please Select a Table --</option>
+                        <% tableNames.forEach(name => { %>
+                            <option value="<%= name %>"><%= name %></option>
+                        <% }) %>
+                    </select>
+
+                    <div id="tableMetadataArea" style="display: none;">
+                        
+                        <div class="mb-4 p-3 card-saas d-flex align-items-center justify-content-between" style="background: #fdfdfd; border-left: 4px solid var(--ct-accent);">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p-2 bg-dark text-white rounded">
+                                    <i data-lucide="layers" style="width:20px; height:20px;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold m-0 text-dark">Data Matrix Volume</h6>
+                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">Live Infrastructure Syncing</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fs-4 fw-bold text-dark" id="tableRecordCount">0</span>
+                                <span class="text-muted small d-block" style="font-size: 0.75rem;">Total Registered Records</span>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-3"><i data-lucide="columns" style="width:18px;"></i> Column Schema Structure</h5>
+                        <div class="table-responsive card-saas p-0 mb-4 overflow-hidden">
+                            <table class="table ct-table" id="colTable">
+                                <thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Key Spec</th><th>Default Value</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-3"><i data-lucide="key" style="width:18px;"></i> Relational Index Components</h5>
+                        <div class="table-responsive card-saas p-0 overflow-hidden">
+                            <table class="table ct-table" id="indexTable">
+                                <thead><tr><th>Index Identifier</th><th>Target Column</th><th>Unique Spec</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-upgrade" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Upgrade Database Structure</h2>
+                    <p class="text-muted m-0">Safely add new data attributes via the <code>ALTER TABLE ADD COLUMN</code> architecture.</p>
+                </div>
+                <div class="card-saas">
+                    <form action="/maintenance/upgrade-structure" method="POST" onsubmit="showLoading()">
+                        <input type="hidden" name="action" value="ADD">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Select Table Target</label>
+                                <select class="form-select" name="table_name" required>
+                                    <% tableNames.forEach(name => { %> <option value="<%= name %>"><%= name %></option> <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">New Column Identifier</label>
+                                <input type="text" class="form-control" name="column_name" placeholder="e.g., phone_number" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Data Type Mapping</label>
+                                <select class="form-select" name="data_type" required>
+                                    <option value="VARCHAR">VARCHAR</option>
+                                    <option value="INT">INT</option>
+                                    <option value="TEXT">TEXT</option>
+                                    <option value="DATE">DATE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Length Allocation</label>
+                                <input type="number" class="form-control" name="length" placeholder="255">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Accept NULL?</label>
+                                <select class="form-select" name="is_null">
+                                    <option value="YES">YES (Nullable)</option>
+                                    <option value="NO">NO (Not Null)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Default Evaluation Value (Optional)</label>
+                                <input type="text" class="form-control" name="default_value" placeholder="e.g., Unspecified">
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <button type="submit" class="btn-premium"><i data-lucide="play"></i> Execute ALTER TABLE Transaction</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-saas card-danger-saas mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-danger m-0">Drop Existing Column Attributes</h5>
+                        <span class="badge-danger-saas">ALTER TABLE DROP</span>
+                    </div>
+                    <p class="text-muted small">⚠️ <strong>WARNING:</strong> Deleting the column will permanently remove all data contained within it!</p>
+                    <form action="/maintenance/upgrade-structure" method="POST" onsubmit="return confirm('⚠️ APAKAH ANDA YAKIN?\nMenghapus kolom ini akan menghapus semua data di dalamnya secara permanen dan tidak bisa dikembalikan!');">
+                        <input type="hidden" name="action" value="DROP">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Select Table Target</label>
+                                <select class="form-select" name="table_name" required>
+                                    <% tableNames.forEach(name => { %> <option value="<%= name %>"><%= name %></option> <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Column Target Identifier to Drop</label>
+                                <input type="text" class="form-control" name="column_name" placeholder="e.g., phone_number" required>
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <button type="submit" class="btn-danger-saas"><i data-lucide="trash-2"></i> Destroy & Drop Column Spec</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="panel-index" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Index Management Optimization</h2>
+                    <p class="text-muted m-0">Establish high-performance query optimization indexing clusters across structural attributes.</p>
+                </div>
+                <div class="card-saas">
+                    <form action="/maintenance/manage-index" method="POST" onsubmit="showLoading()">
+                        <input type="hidden" name="action" value="CREATE">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Table Context</label>
+                                <select class="form-select" name="table_name" required>
+                                    <% tableNames.forEach(name => { %> <option value="<%= name %>"><%= name %></option> <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Index Identifier</label>
+                                <input type="text" class="form-control" name="index_name" placeholder="idx_column_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Column Context</label>
+                                <input type="text" class="form-control" name="column_name" placeholder="target_field" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Index Type Specification</label>
+                                <select class="form-select" name="index_type">
+                                    <option value="NORMAL">Standard B-Tree Index (Single / Composite)</option>
+                                    <option value="UNIQUE">Unique Performance Constraint Index</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-3 text-end">
+                                <button type="submit" class="btn-premium"><i data-lucide="zap"></i> Provision New Index</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-saas card-danger-saas mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-danger m-0">Remove Relational Optimization Index</h5>
+                        <span class="badge-danger-saas">DROP INDEX</span>
+                    </div>
+                    <p class="text-muted small">Menghapus indeks akan menurunkan kecepatan pencarian data pada kolom terkait, tetapi menghemat ruang penyimpanan skema.</p>
+                    <form action="/maintenance/manage-index" method="POST" onsubmit="return confirm('⚠️ APAKAH ANDA YAKIN?\nMenghapus indeks optimasi dapat mempengaruhi kecepatan kueri pencarian tabel!');">
+                        <input type="hidden" name="action" value="DROP">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Table Context</label>
+                                <select class="form-select" name="table_name" required>
+                                    <% tableNames.forEach(name => { %> <option value="<%= name %>"><%= name %></option> <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Index Identifier to Destroy</label>
+                                <input type="text" class="form-control" name="index_name" placeholder="idx_column_name" required>
+                            </div>
+                            <div class="col-12 mt-4 text-end">
+                                <button type="submit" class="btn-danger-saas"><i data-lucide="trash-2"></i> Destroy & Drop Relational Index</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>                
+            </div>
+
+            <div class="tab-pane fade" id="panel-reset" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">Reset Database Storage</h2>
+                    <p class="text-muted m-0">Purge relational state parameters to early development seeder defaults for staging simulation.</p>
+                </div>
+                <div class="card border-danger bg-light p-4">
+                    <h5 class="text-danger fw-bold"><i data-lucide="alert-octagon"></i> HAZARDOUS AREA: PRIVILEGED OPERATION</h5>
+                    <p class="text-muted small">This execution will run sequential truncating DELETE queries across user structural tables, reset AUTO_INCREMENT states back to 1, and re-inject default mock seeds. Core schema entity bounds will remain intact.</p>
+                    <div class="mt-3">
+                        <a href="/maintenance/backup-database" class="btn btn-primary fw-bold shadow-sm me-2">
+                        <i data-lucide="download"></i> Download Backup .SQL
+                        </a>
+                        <form action="/maintenance/reset-database" method="POST" id="resetForm" 
+                            onsubmit="return confirm('⚠️ WARNING: Are you sure you want to reset the database?');" 
+                            style="display: inline-block; margin: 0;">
+                            
+                            <button type="submit" class="btn btn-danger font-semibold fw-bold shadow-sm">
+                                <i data-lucide="refresh-cw" style="width:16px;"></i> Dispatch Reset & Re-Seed Sequence
+                            </button>
+                            
+                        </form>
+                    </div>
+                </div>
+                
+                <form id="hiddenResetForm" action="/maintenance/reset-database" method="POST" style="display:none;"></form>            
+            </div>
+
+            <div class="tab-pane fade" id="panel-logs" role="tabpanel">
+                <div class="mb-4">
+                    <h2 class="fw-bold m-0">SQL Activity Log Audit</h2>
+                    <p class="text-muted m-0">Immutable record of maintenance DDL and DML operations processed by system operators.</p>
+                </div>
+                <div class="card-saas p-0 overflow-hidden">
+                    <table class="table ct-table m-0">
+                        <thead>
+                            <tr><th>Operator</th><th>Action Class</th><th>Executed Query Statement</th><th>Transaction Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <% if (logs.length === 0) { %>
+                                <tr><td colspan="4" class="text-center text-muted py-4">No logged maintenance transactions found.</td></tr>
+                            <% } %>
+                            <% logs.forEach(log => { %>
+                                <tr>
+                                    <td class="fw-semibold">@<%= log.username %></td>
+                                    <td><span class="badge bg-dark"><%= log.action_type %></span></td>
+                                    <td><code class="text-wrap"><%= log.query_executed %></code></td>
+                                    <td>
+                                        <span class="badge <%= log.status === 'SUCCESS' ? 'bg-success' : 'bg-danger' %>">
+                                            <%= log.status %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 bg-transparent text-center">
+                <div class="spinner-border text-light mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                <h6 class="text-light fw-bold">Executing Database Transaction Pipeline...</h6>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Engine AJAX Fetch Metadata Tabel
+        async function fetchTableMetadata(tableName) {
+            const area = document.getElementById("tableMetadataArea");
+            if (!tableName) { area.style.display = "none"; return; }
+            
+            try {
+                const response = await fetch(`/maintenance/table-details/${tableName}`);
+                const data = await response.json();
+                
+                // Urus Tampilan Kolom
+                const colBody = document.querySelector("#colTable tbody");
+                colBody.innerHTML = "";
+                data.columns.forEach(c => {
+                    colBody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold text-dark">${c.Field}</td>
+                            <td><code>${c.Type}</code></td>
+                            <td>${c.Null}</td>
+                            <td><span class="badge bg-warning text-dark">${c.Key || 'NONE'}</span></td>
+                            <td class="text-muted">${c.Default || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                // Urus Tampilan Index
+                const idxBody = document.querySelector("#indexTable tbody");
+                idxBody.innerHTML = "";
+                if(data.indexes.length === 0) {
+                    idxBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No custom indexes bound to this entity.</td></tr>`;
+                } else {
+                    data.indexes.forEach(i => {
+                        idxBody.innerHTML += `
+                            <tr>
+                                <td class="fw-semibold">${i.Key_name}</td>
+                                <td>${i.Column_name}</td>
+                                <td>${i.Non_unique === 0 ? 'YES (Unique)' : 'NO (Standard)'}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Inject initial Total Records data
+                document.getElementById("tableRecordCount").innerText = data.totalRows;
+
+                area.style.display = "block";
+            } catch (err) {
+                alert("Failed to analyze table metadata: " + err.message);
+            }
+        }
+
+        function showLoading() {
+            const loadModal = new Bootstrap.Modal(document.getElementById('loadingModal'));
+            loadModal.show();
+        }
+
+        function confirmResetDB() {
+            if (confirm("⚠️ CRITICAL DATABASE TRANSACTION WARNING!\nAre you absolutely sure you want to purge all career tracker data matrices and reset the AUTO_INCREMENT keys back to default states?")) {
+                showLoading();
+                document.getElementById("hiddenResetForm").submit();
+            }
+        }
+
+        // LIVE POLLING ENGINE (Background Sync without Refresh)
+        let liveRecordPollingTimer = null;
+
+        document.getElementById("tableSelector").addEventListener("change", function() {
+            const selectedTable = this.value;
+            
+            if (liveRecordPollingTimer) {
+                clearInterval(liveRecordPollingTimer);
+            }
+            
+            if (selectedTable) {
+                liveRecordPollingTimer = setInterval(async () => {
+                    try {
+                        const response = await fetch(`/maintenance/table-details/${selectedTable}`);
+                        const data = await response.json();
+                        
+                        const counterElement = document.getElementById("tableRecordCount");
+                        if (counterElement) {
+                            counterElement.innerText = data.totalRows;
+                        }
+                    } catch (err) {
+                        console.error("Failed to sync live record volume:", err.message);
+                    }
+                }, 2000); 
+            }
+        });
+    </script>
+    <script>
+    // 🔥 TAMBAHKAN KODE INI DI PALING BAWAH (Sebelum)
+        // LIVE POLLING ENGINE (Khusus untuk Maintenance Dashboard Panel 1)
+        setInterval(async () => {
+            // Kita hanya perlu melakukan sync jika panel dashboard sedang aktif dilihat admin
+            const dashboardPanel = document.getElementById("panel-dash");
+            if (dashboardPanel.classList.contains("active") || dashboardPanel.classList.contains("show")) {
+                try {
+                    const response = await fetch('/maintenance/dashboard-stats');
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Update angka di HTML secara instan!
+                        const tableEl = document.getElementById("dashTotalTables");
+                        const recordEl = document.getElementById("dashTotalRecords");
+                        
+                        if(tableEl) tableEl.innerText = data.totalTables;
+                        if(recordEl) recordEl.innerText = data.totalRecords;
+                    }
+                } catch (err) {
+                    console.error("Gagal melakukan sync dashboard secara live:", err.message);
+                }
+            }
+        }, 2000); // Melakukan pengecekan setiap 5 detik
+        </script>
+</body>
+</html>
